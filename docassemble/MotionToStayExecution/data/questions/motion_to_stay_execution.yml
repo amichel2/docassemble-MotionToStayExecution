@@ -1,0 +1,484 @@
+---
+include:
+  - docassemble.AssemblyLine:assembly_line.yml
+  - docassemble.ALMassachusetts:al_massachusetts.yml
+  - docassemble.MassAccess:massaccess.yml
+---
+metadata:
+  title: |
+    Motion to Stay Execution
+  short title: |
+    Motion to Stay Execution
+  tags:
+    - HO-00-00-00-00
+  authors:
+    - Ashley Michel
+---
+mandatory: True
+comment: |
+  Global interview metadata
+variable name: interview_metadata["motion_to_stay_execution"]
+data:
+  al_weaver_version: "1.7.0"
+  generated on: "2022-11-13"
+  title: >-
+    Motion to Stay Execution
+  short title: >-
+    Motion to Stay Execution
+  description: |-
+    If you were unsuccessful with your eviction hearing, you can ask the court to delay your move-out from the property if you meet certain criteria within ten days of your hearing. A request for a Stay of Execution can be made only if it is a "no-fault eviction" if you are forced to leave without cause, and you cannot in good faith find a place to live.
+  original_form: >-
+    
+  allowed courts: 
+    - "Housing Court"
+  categories:
+    - "HO-00-00-00-00"
+  typical role: "defendant"
+  generate download screen: True
+---
+code: |
+  interview_metadata['main_interview_key'] =  'motion_to_stay_execution'
+---
+code: |
+  # This controls the default country and list of states in address field questions
+  AL_DEFAULT_COUNTRY = "US"
+---
+code: |
+  # This controls the default state in address field questions
+  AL_DEFAULT_STATE = "MA"
+---
+code: |
+  github_repo_name =  'docassemble-MotionToStayExecution'
+---
+code: |
+  interview_short_title = "Ask the court to delay your move out after your eviction hearing"
+---
+code: |
+  al_form_type = "existing_case" 
+---
+objects:
+  - other_parties: ALPeopleList.using(there_are_any=True)
+  - users: ALPeopleList.using(there_are_any=True)
+---
+sections:
+  - review_motion_to_stay_execution: Review your answers
+---
+#################### Interview order #####################
+comment: |
+  Controls order and branching logic for questions specific to this form
+id: interview_order_motion_to_stay_execution
+code: |
+  # Set the allowed courts for this interview
+  allowed_courts = interview_metadata["motion_to_stay_execution"]["allowed courts"]
+  nav.set_section("review_motion_to_stay_execution")
+  user_role = "defendant"
+  users.gather()
+  set_parts(subtitle=str(users))
+  users[0].address.address
+  set_progress(14)
+  users[0].phone_number
+  users[0].email
+  trial_court
+  set_progress(28)
+  trial_court.address.address
+  docket_number
+  plaintiffs.gather()
+  set_progress(42)
+  defendants.gather()
+  received_notice_sheriff_move
+  sixty_older
+  set_progress(56)
+  tenant_unable_find_place_live
+  special_hardship_tenant_move
+  factor_court_consider
+  hearing_time
+  mailed_landlord_lawyer
+  set_progress(70)
+  signature_date
+  interview_order_motion_to_stay_execution = True
+---
+###################### Main order ######################
+comment: |
+  This block includes the logic for standalone interviews.
+  Delete mandatory: True to include in another interview
+mandatory: True
+code: |
+  al_intro_screen
+  motion_to_stay_execution_intro
+  interview_order_motion_to_stay_execution
+  signature_date
+  # Store anonymous data for analytics / statistics
+  store_variables_snapshot(
+      persistent=True,
+      data={
+          "zip": showifdef("users[0].address.zip"),
+          "reached_interview_end": True,
+      },
+  )
+  motion_to_stay_execution_preview_question    
+  basic_questions_signature_flow
+  motion_to_stay_execution_download
+---
+comment: |
+  This question is used to introduce your interview. Please customize
+id: Motion_to_Stay_Execution
+continue button field: motion_to_stay_execution_intro
+question: |
+  Motion to Stay Execution
+subquestion: |
+  To use this form, you will need relevant Housing court documents including:
+  
+  *  The Summons and Complaint
+  *  Your Housing Search Information 
+  *  48-Hour Notice (if applicable)
+---
+id: Is this an emergency motion for a stay of execution pending a hearing
+question: |
+  Is this an emergency motion for a stay of execution pending a hearing?
+fields:
+  - "Did you get a 48-hour notice of eviction from a sheriff or constable?": received_notice_sheriff_move
+    datatype: yesnoradio
+  - "What is the date on the sheriff's eviction notice?": move_notice_date
+    datatype: date
+    show if: received_notice_sheriff_move
+  - "What is the time on the sheriff's eviction notice? (i.e. 2:00PM or 9:00AM)": move_time
+    datatype: time
+    show if: received_notice_sheriff_move
+---
+id: Request for a Stay of Execution
+question: |
+  Request for a Stay of Execution
+subquestion: |
+  A Stay of Execution will let a tenant stay in their apartment for up to six months. 
+  
+  Elderly or disabled tenants can request a stay of up to one year.
+fields:
+  - "Are you or someone in your household 60 years old or older?": sixty_older
+    datatype: yesnoradio
+  - "Do you or someone in your household have a {disability}? (Note: You need not get SSI or SSDI to meet this requirement.)": physical_mental_impairment
+    datatype: yesnoradio
+terms:
+  disability: |
+    Disability is XYZ. 
+---
+id: Unable to Find a Place to Live
+question: |
+  Unable to Find a Place to Live
+fields:
+  - "What have you done to find a new place to live in?": tenant_unable_find_place_live
+    input type: area
+---
+id: Unable to Find a Place to Live 2
+question: |
+  Unable to Find a Place to Live
+fields:
+  - "Why would moving now be hard for you? (i.e. you rented an apartment, but it will not be available for a month, your children need to finish school, you are handicapped or elderly and cannot find a suitable place to live or you are on a waiting list for housing or you are receiving a subsidy soon or you have a child with a disability)": special_hardship_tenant_move
+    input type: area
+---
+id: Unable to Find a Place to Live 3
+question: |
+  Unable to Find a Place to Live
+fields:
+  - "Is there any other information you think may help the judge to give you more time to move?": factor_court_consider
+    datatype: yesnoradio
+  - "What other information would help the judge to give you more time to move?": factor_court_consider
+    input type: area
+    show if: factor_court_consider
+---
+id: Request for Motion
+question: |
+  Request for Motion
+subquestion: |
+  Did the clerk tell you when your hearing date and time will be?
+fields:
+  - "What date did the clerk tell you your hearing will be?": motion_hearing_date
+    datatype: date 
+  - "What time did the clerk tell you your hearing will be?": hearing_time
+    datatype: time
+---
+id: Notice of Stay Execution to Plaintiff
+question: |
+  Notice of Stay Execution to Plaintiff
+subquestion: |
+  How will you be delivering the motion and Housing Search Log to your landlord or landlord's lawyer? (Check only one, NOT both)  
+fields:
+  - "Mailing": mailed_landlord_lawyer
+    datatype: yesnoradio
+  - "Physical Delivery": delivered_landlord_lawyer
+    datatype: yesnoradio
+  - "What date do you plan to deliver your motion and Housing Search Log to your landlord or landlord's lawyer?": delivered_mailed_date
+    datatype: date
+---
+id: preview motion_to_stay_execution
+question: |
+  Preview your form before you sign it
+subquestion: |
+  Here is a preview of the form you will sign on the next page.   
+  
+  ${ al_court_bundle.as_pdf(key='preview') }
+
+  Click the image to open it in a new tab. Click the "Edit answers" button
+  to edit your answers.
+
+  ${ action_button_html(url_action('review_motion_to_stay_execution'), label='Edit answers', color='info') }
+  
+  Remember to come back to this window to continue and sign your form.
+continue button field: motion_to_stay_execution_preview_question    
+---
+code: |
+  signature_fields = ['users[0].signature']
+---
+code: |
+  # This is a placeholder for the addresses that will be searched
+  # for matching address to court. Edit if court venue is based on 
+  # a different address than the user's
+  addresses_to_search = [user.address for user in users]
+---
+id: motion to stay execution review screen
+event: review_motion_to_stay_execution
+question: |
+  Review your answers
+review:
+  - Edit: trial_court
+    button: |
+      **Trial court**
+  
+      % if defined("trial_court.address.county"):
+      * address: ${ trial_court.address.block() }
+      % endif
+      % if defined("trial_court.name.first"):
+      * name: ${ trial_court.name.full() }
+      % endif
+  - Edit: docket_number
+    button: |
+      **Docket number**:
+      ${ docket_number }
+  - Edit: plaintiffs.revisit
+    button: |
+      **Plaintiffs**
+
+      % for item in plaintiffs:
+        * ${ item }
+      % endfor
+  - Edit: defendants.revisit
+    button: |
+      **Defendants**
+
+      % for item in defendants:
+        * ${ item }
+      % endfor
+  - Edit: tenant_unable_find_place_live
+    button: |
+      **What have you done to find a new place to live in?**:
+      > ${ single_paragraph(tenant_unable_find_place_live) }
+  - Edit: sixty_older
+    button: |
+      **Are you or someone in your household 60 years old or older?**:
+      ${ word(yesno(sixty_older)) }
+  - Edit: physical_mental_impairment
+    button: |
+      **Do you or someone in your household have a disability? (Note: You need not get SSI or SSDI to meet this requirement.)**:
+      ${ word(yesno(physical_mental_impairment)) }
+  - Edit: special_hardship_tenant_move
+    button: |
+      **Why would moving now be hard for you? (i.e. you rented an apartment, but it will not be available for a month, your children need to finish school, you are handicapped or elderly and cannot find a suitable place to live or you are on a waiting list for housing or you are receiving a subsidy soon or you have a child with a disability)**:
+      > ${ single_paragraph(special_hardship_tenant_move) }
+  - Edit: received_notice_sheriff_move
+    button: |
+      **Did you get a 48-hour notice of eviction from a sheriff or constable?**:
+      ${ word(yesno(received_notice_sheriff_move)) }
+  - Edit: move_notice_date
+    button: |
+      **What is the date on the sheriff's eviction notice?**:
+      ${ move_notice_date }
+  - Edit: move_time
+    button: |
+      **What is the time on the sheriff's eviction notice? (i.e. 2:00PM or 9:00AM)**:
+      ${ move_time }
+  - Edit: factor_court_consider
+    button: |
+      **Is there any other information you think may help the judge to give you more time to move? If so, please provide any other information below.**:
+      > ${ single_paragraph(factor_court_consider) }
+  - Edit: hearing_time
+    button: |
+      **What time did the clerk tell you your hearing time will be? (You will need to ask the clerk when you will have a hearing and if you should put the time on the motion or if the clerk will do it.) Only fill in a time if the clerk tells you to do it. (i.e. 2:00PM or 9:00AM)**:
+      ${ hearing_time }
+  - Edit: motion_hearing_date
+    button: |
+      **What date did the clerk tell you your hearing date will be? (You will need to ask the clerk when you will have a hearing and if you should put the date on the motion or if the clerk will do it.) Only fill in a date if the clerk tells you to do it.**:
+      ${ motion_hearing_date }
+  - Edit: mailed_landlord_lawyer
+    button: |
+      **Will you be mailing the motion and Housing Search Log to your landlord or landlord's lawyer?**:
+      ${ word(yesno(mailed_landlord_lawyer)) }
+  - Edit: delivered_landlord_lawyer
+    button: |
+      **Will you be delivering the motion and Housing Search Log to your landlord or landlord's lawyer?**:
+      ${ word(yesno(delivered_landlord_lawyer)) }
+  - Edit: delivered_mailed_date
+    button: |
+      **What date do you plan to deliver your motion and Housing Search Log to your landlord or landlord's lawyer?**:
+      ${ delivered_mailed_date }
+  - Edit: users.revisit
+    button: |
+      **Users**
+
+      % for item in users:
+        * ${ item }
+      % endfor
+  - Edit: signature_date
+    button: |
+      **Date of signature**:
+      ${ signature_date }
+---
+continue button field: plaintiffs.revisit
+question: |
+  Edit plaintiffs
+subquestion: |
+  ${ plaintiffs.table }
+
+  ${ plaintiffs.add_action() }
+---
+table: plaintiffs.table
+rows: plaintiffs
+columns:
+  - Name: |
+      row_item.name.full() if defined("row_item.name.first") else ""
+edit:
+  - name.first
+confirm: True
+
+---
+continue button field: defendants.revisit
+question: |
+  Edit defendants
+subquestion: |
+  ${ defendants.table }
+
+  ${ defendants.add_action() }
+---
+table: defendants.table
+rows: defendants
+columns:
+  - Name: |
+      row_item.name.full() if defined("row_item.name.first") else ""
+edit:
+  - name.first
+confirm: True
+
+---
+continue button field: users.revisit
+question: |
+  Edit users
+subquestion: |
+  ${ users.table }
+
+  ${ users.add_action() }
+---
+table: users.table
+rows: users
+columns:
+  - Signature: |
+      row_item.signature if defined("row_item.signature") else ""
+  - Name: |
+      row_item.name.full() if defined("row_item.name.first") else ""
+  - Address: |
+      row_item.address.block() if defined("row_item.address.address") else ""
+  - Phone number: |
+      row_item.phone_number if defined("row_item.phone_number") else ""
+  - Email: |
+      row_item.email if defined("row_item.email") else ""
+edit:
+  - signature
+  - name.first
+  - address.address
+  - phone_number
+  - email
+confirm: True
+
+---
+id: download motion_to_stay_execution
+event: motion_to_stay_execution_download
+question: |
+  All done
+subquestion: |
+  Thank you ${users}. Your form is ready to download and deliver.
+  
+  View, download and send your form below. Click the "Edit answers" button to fix any mistakes.
+
+  ${ action_button_html(url_action('review_motion_to_stay_execution'), label='Edit answers', color='info') }
+  
+  
+  ${ al_user_bundle.download_list_html() }
+  
+
+  ${ al_user_bundle.send_button_html(show_editable_checkbox=False) }
+
+progress: 100
+---
+# ALDocument objects specify the metadata for each template
+objects:
+  - motion_to_stay_execution_Post_interview_instructions: ALDocument.using(title="Instructions", filename="motion_to_stay_execution_next_steps.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
+  - motion_to_stay_execution_attachment: ALDocument.using(title="Motion to Stay Execution", filename="motion_to_stay_execution", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
+---
+# Bundles group the ALDocuments into separate downloads, such as for court and for the user
+objects:
+  - al_user_bundle: ALDocumentBundle.using(elements=[motion_to_stay_execution_Post_interview_instructions, motion_to_stay_execution_attachment], filename="motion_to_stay_execution", title="All forms to download for your records", enabled=True)
+  - al_court_bundle: ALDocumentBundle.using(elements=[motion_to_stay_execution_attachment],  filename="motion_to_stay_execution", title="All forms to deliver to court", enabled=True)
+---
+# Each attachment defines a key in an ALDocument. We use `i` as the placeholder here so the same template is 
+# used for "preview" and "final" keys, and logic in the template checks the value of 
+# `i` to show or hide the user's signature
+attachments:
+  - name: Post-interview-Instructions
+    filename: motion_to_stay_execution_next_steps
+    docx template file: motion_to_stay_execution_next_steps.docx
+    variable name: motion_to_stay_execution_Post_interview_instructions[i]
+  - name: motion to stay execution
+    filename: motion_to_stay_execution
+    variable name: motion_to_stay_execution_attachment[i]
+    skip undefined: True
+    pdf template file: motion_to_stay_execution.pdf
+    fields:
+      - "trial_court_county": ${ trial_court.address.county }
+      - "trial_court": ${ trial_court }
+      - "docket_number": ${ docket_number }
+      - "plaintiffs": ${ plaintiffs }
+      - "defendants": ${ defendants }
+      - "tenant_unable_find_place_live": ${  tenant_unable_find_place_live }
+      - "sixty_older": ${ sixty_older }
+      - "physical_mental_impairment": ${ physical_mental_impairment }
+      - "special_hardship_tenant_move": ${ attachment_name.safe_value("special_hardship_tenant_move") }
+      - "received_notice_sheriff_move": ${ received_notice_sheriff_move }
+      - "move_notice_date": ${ move_notice_date.format() }
+      - "move_time": ${ move_time }
+      - "factor_court_consider": ${ attachment_name.safe_value("factor_court_consider") }
+      - "hearing_time": ${ hearing_time }
+      - "motion_hearing_date": ${ motion_hearing_date.format() }
+      - "mailed_landlord_lawyer": ${ mailed_landlord_lawyer }
+      - "delivered_landlord_lawyer": ${ delivered_landlord_lawyer }
+      - "delivered_mailed_date": ${ delivered_mailed_date.format() }
+      - "users_signature": ${ users[0].signature_if_final(i) }
+      - "users1_signature": ${ users[0].signature_if_final(i) }
+      - "users_name_full__2": ${ users[0] }
+      - "users_name_full__1": ${ users[0] }
+      - "users_address_line_one": ${ users[0].address.line_one() }
+      - "users1_address_line_one": ${ users[0].address.line_one() }
+      - "users_address_line_two": ${ users[0].address.line_two() }
+      - "users1_address_line_two": ${ users[0].address.line_two() }
+      - "users_phone_number": ${ users[0].phone_number }
+      - "users1_phone_number": ${ users[0].phone_number }
+      - "users_email": ${ users[0].email }
+      - "users1_email": ${ users[0].email }
+      - "signature_date": ${ signature_date }
+---
+code: |
+  motion_to_stay_execution_attachment.overflow_fields["tenant_unable_find_place_live"].overflow_trigger = 272
+  motion_to_stay_execution_attachment.overflow_fields["tenant_unable_find_place_live"].label = "What have you done to find a new place to live in?"
+  motion_to_stay_execution_attachment.overflow_fields["special_hardship_tenant_move"].overflow_trigger = 260
+  motion_to_stay_execution_attachment.overflow_fields["special_hardship_tenant_move"].label = "Why would moving now be hard for you? (i.e. you rented an apartment, but it will not be available for a month, your children need to finish school, you are handicapped or elderly and cannot find a suitable place to live or you are on a waiting list for housing or you are receiving a subsidy soon or you have a child with a disability)"
+  motion_to_stay_execution_attachment.overflow_fields["factor_court_consider"].overflow_trigger = 365
+  motion_to_stay_execution_attachment.overflow_fields["factor_court_consider"].label = "Is there any other information you think may help the judge to give you more time to move? If so, please provide any other information below."
+  motion_to_stay_execution_attachment.overflow_fields.gathered = True
+
+
