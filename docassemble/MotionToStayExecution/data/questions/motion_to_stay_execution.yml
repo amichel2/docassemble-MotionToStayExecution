@@ -6,9 +6,9 @@ include:
 ---
 metadata:
   title: |
-    Motion to Stay Execution
+    Motion to Stay Execution (Eviction)
   short title: |
-    Motion to Stay Execution
+    Motion to Stay Execution (Eviction) 
   tags:
     - HO-00-00-00-00
   authors:
@@ -71,7 +71,7 @@ code: |
   # Set the allowed courts for this interview
   allowed_courts = interview_metadata["motion_to_stay_execution"]["allowed courts"]
   nav.set_section("review_motion_to_stay_execution")
-  user_role = "defendant"
+  user_ask_role = "defendant"
   users.gather()
   set_parts(subtitle=str(users))
   users[0].address.address
@@ -90,9 +90,10 @@ code: |
   set_progress(56)
   tenant_unable_find_place_live
   special_hardship_tenant_move
-  factor_court_consider
+  needs_more_info
   hearing_time
   mailed_landlord_lawyer
+  next_steps
   set_progress(70)
   signature_date
   interview_order_motion_to_stay_execution = True
@@ -126,88 +127,253 @@ continue button field: motion_to_stay_execution_intro
 question: |
   Motion to Stay Execution
 subquestion: |
+  If you were unsuccessful with your eviction hearing or you agreed in a court judgement to move out, you can ask the court to delay your move-out from the property if you meet certain criteria within ten days of your hearing. A request for a Stay of Execution can be made only if it is a {no-fault eviction} if you are forced to leave without cause, and you cannot in good faith find a place to live. The amount of time you can ask for depends on the reason for the eviction.
+  
+  If your landlord brought an eviction against you for a reason that is your fault (i.e non-payment of rent or you did not follow the terms of your lease), the court may not give you more time to move or little extra time to move (i.e a few days or a few weeks). Also, the court may ask you to pay rent or a fair value of your apartment while you stay. 
+  
   To use this form, you will need relevant Housing court documents including:
   
   *  The Summons and Complaint
-  *  Your Housing Search Information 
-  *  48-Hour Notice (if applicable)
+  *  Your Housing Search Information (You will need this information for the {Housing Search Log}) 
+  *  {48-Hour Notice} (if applicable)
+  
+terms:
+  no-fault eviction: |
+    Examples of no-fault eviction include:
+    
+    *   The landlord's family wants to move into your apartment.
+    *   The landlord wants to sell the building    
+
+  housing search log: |
+    You will need to submit the Housing Search Log Form with you request for a Stay of Execution showing your search for apartments you tried to rent and things you have done to look for a new apartment.
+ 
+  48-hour notice:  |
+     If your landlord/owner won the eviction case, they will get an execution 10 days after the court enters the judgement. The landlord can use the execution to have a sheriff or constable physically remove you and your things from your home. The constable or sheriff must you give you **48 hours notice** before they can move you out. 
 ---
-id: Is this an emergency motion for a stay of execution pending a hearing
-question: |
-  Is this an emergency motion for a stay of execution pending a hearing?
+id: your name
+sets:
+    - users[0].name.first
+    - users[0].name.last
+    - users[0].name.middle
+    - users[0].name.suffix
+question:  |
+  What is your name?
 fields:
-  - "Did you get a 48-hour notice of eviction from a sheriff or constable?": received_notice_sheriff_move
+  - code: |
+      users[0].name_fields()  
+---
+id: is the user the plaintiff or defendant?
+comment: |
+  This question is asked if the interview can be used by both
+  a Plaintiff and a Defendant. It sets the value of `user_role`, `user_started_case`,
+  `plaintiffs`, `defendants`, `petitioners` and `respondents`.
+  
+  If you know your interview is exclusively
+  used by the Plaintiff or Defendant, set `user_ask_role = 'plaintiff'` or
+  `user_ask_role='defendant'` in your code.
+question: |
+  Did you start this case, or are you responding to a case
+  that someone else started?
+subquestion: |
+    You are tenant/defendant in an eviction hearing, so select **"Responding to a case"** 
+fields: 
+  - no label: user_ask_role
+    datatype: radio
+    choices:
+      - Starting a new case: plaintiff
+      - Responding to a case: defendant
+  - note: |
+      Okay, you are the **Plaintiff** or Petitioner in this case. The other 
+      side is the **Defendant** or Respondent.
+    show if:
+      variable: user_ask_role
+      is: "plaintiff"
+  - note: |
+      Okay, you are the **Defendant** or Respondent in this case. The other 
+      side is the **Plaintiff** or Petitioner.
+    show if:
+      variable: user_ask_role
+      is: "defendant"
+---
+sets:
+  - other_parties[i].name.first
+  - other_parties[i].name.last
+  - other_parties[i].name.middle
+  - other_parties[i].name.suffix
+id: names of opposing parties
+question: |
+  % if user_started_case:
+  Name of ${ ordinal(i) } **defendant** or respondent in this
+  matter
+  % else:
+  Name of ${ ordinal(i) } **plaintiff** or petitioner in this matter
+  % endif
+subquestion: |
+  **The plaintiff in your case is your landlord(s).**
+fields:
+  - code: |
+      other_parties[i].name_fields(person_or_business='unsure')
+---
+id: any other opposing parties
+question: |
+  % if user_started_case:
+  Is there any other **defendant** or respondent in this
+  matter?
+  % else:
+  Is there any other **plaintiff** or petitioner in this matter?
+  % endif
+subquestion: |
+  **The plaintiff in your case is your landlord(s).**
+fields:
+  - no label: other_parties.there_is_another
+    datatype: yesnoradio
+---
+id: Did you get a 48-hour notice of eviction from a sheriff or constable? 
+question: |
+  Did you get a 48-hour notice of eviction from a sheriff or constable? 
+fields:
+  - no label: received_notice_sheriff_move
     datatype: yesnoradio
   - "What is the date on the sheriff's eviction notice?": move_notice_date
     datatype: date
     show if: received_notice_sheriff_move
-  - "What is the time on the sheriff's eviction notice? (i.e. 2:00PM or 9:00AM)": move_time
+  - "What is the time on the sheriff's eviction notice?": move_time
     datatype: time
     show if: received_notice_sheriff_move
 ---
 id: Request for a Stay of Execution
-question: |
-  Request for a Stay of Execution
-subquestion: |
-  A Stay of Execution will let a tenant stay in their apartment for up to six months. 
+question: | 
+  How long may the court delay your move-out from the property?
   
-  Elderly or disabled tenants can request a stay of up to one year.
 fields:
-  - "Are you or someone in your household 60 years old or older?": sixty_older
+  - "Are you or someone in your household **60 years old or older**?": sixty_older
     datatype: yesnoradio
+  - note: | 
+     The court may delay your move-out for up to **one year.**
+    show if: 
+      variable: sixty_older
+      is: true
+  - note: | 
+     The court may delay your move-out for up to **six months** if the eviction was not your fault. *If the court grants you a shorter time, another motion can be filed if you need more time.* 
+    show if: 
+      variable: sixty_older
+      is: false
+  
   - "Do you or someone in your household have a {disability}? (Note: You need not get SSI or SSDI to meet this requirement.)": physical_mental_impairment
     datatype: yesnoradio
+  - note: | 
+      The court may delay your move-out for up to **one year.**
+    show if: 
+      variable: physical_mental_impairment
+      is: true
+  - note: | 
+     The court may delay your move-out for up to **six months** if the eviction was not your fault. *If the court grants you a shorter time, another motion can be filed if you need more time.* 
+    show if: 
+      variable: physical_mental_impairment
+      is: false
+  
 terms:
   disability: |
-    Disability is XYZ. 
+    Your disability can be a physical or mental impairment that significantly limts: 
+    
+    *  The kind of housing you can live in.;
+    *  Your ability to look for new housing.; OR 
+    *  Your ability to care for yourself, perform manual tasks, walk, see, hear, speak, breathe, learn, or work.
+    
+    Note: You do not have to get SSI or SSDI to meet this requirement. 
 ---
 id: Unable to Find a Place to Live
 question: |
-  Unable to Find a Place to Live
+  What have you done to find a new place to live in?
+subquestion: |
+  **Describe what you have done to find a new place to live.**
+  
+  The Housing Search Log Form should be used to help you keep track of the things you did to find a new apartment. You will need to attach a copy of the Housing Search Log Form to your Motion. 
 fields:
-  - "What have you done to find a new place to live in?": tenant_unable_find_place_live
+  - no label: tenant_unable_find_place_live
     input type: area
 ---
 id: Unable to Find a Place to Live 2
 question: |
-  Unable to Find a Place to Live
+  Why would moving now be hard for you?
+subquestion: |
+  For example you can type things like: 
+  
+  * I have rented a new apartment, but it will not be available for a month. 
+  * I cannot move until my children finish school. 
+  * I am handicapped or elderly and cannot find a suitable place. 
+  * I am on a waiting list for housing. 
+  * I should be receiving a subsidy soon. 
+  * I have a child with a disability.  
 fields:
-  - "Why would moving now be hard for you? (i.e. you rented an apartment, but it will not be available for a month, your children need to finish school, you are handicapped or elderly and cannot find a suitable place to live or you are on a waiting list for housing or you are receiving a subsidy soon or you have a child with a disability)": special_hardship_tenant_move
+  - no label: special_hardship_tenant_move 
     input type: area
 ---
 id: Unable to Find a Place to Live 3
 question: |
-  Unable to Find a Place to Live
+  Is there any other information you think may help the judge to give you more time to move?
 fields:
-  - "Is there any other information you think may help the judge to give you more time to move?": factor_court_consider
+  - no label: needs_more_info
     datatype: yesnoradio
-  - "What other information would help the judge to give you more time to move?": factor_court_consider
+  - "Please type in any other information that would help the judge to give you more time to move. (You can tell the judge about ways you are working with your landlord while you are getting ready to move. (i.e. if you are up to date with your rent.))": factor_court_consider
     input type: area
-    show if: factor_court_consider
+    show if: needs_more_info
+  
 ---
 id: Request for Motion
 question: |
-  Request for Motion
+  Do you know your hearing date and time?
 subquestion: |
-  Did the clerk tell you when your hearing date and time will be?
+  **Call the clerk's office** and tell the clerk you need to have a hearing right away before the sheriff move you out. 
+  
+  Ask the court clerk: 
+  
+  * Who should fill in the hearing date and time on my Motion to Stay Execution? *If the clerk tells you to do it, fill out the date and time below. Otherwise, leave this section blank.*
+  
+  * What is the best way to file my Motion with the court? 
+
 fields:
+ 
   - "What date did the clerk tell you your hearing will be?": motion_hearing_date
     datatype: date 
+    required: false
+ 
   - "What time did the clerk tell you your hearing will be?": hearing_time
     datatype: time
+    required: false 
+    
 ---
 id: Notice of Stay Execution to Plaintiff
 question: |
-  Notice of Stay Execution to Plaintiff
+  How will you be delivering the motion and Housing Search Log to your landlord or landlord's lawyer? 
 subquestion: |
-  How will you be delivering the motion and Housing Search Log to your landlord or landlord's lawyer? (Check only one, NOT both)  
+  *You can determine if the landlord has a lawyer if there is number on the BBO# line on the Summons and Complaint.* 
+  
+  **Check only one.**
 fields:
-  - "Mailing": mailed_landlord_lawyer
-    datatype: yesnoradio
-  - "Physical Delivery": delivered_landlord_lawyer
-    datatype: yesnoradio
-  - "What date do you plan to deliver your motion and Housing Search Log to your landlord or landlord's lawyer?": delivered_mailed_date
+  - Mailing: mailed_landlord_lawyer
+    datatype: yesno
+  - Delivery: delivered_landlord_lawyer
+    datatype: yesno
+  - "What date do you plan to deliver or mail your motion and Housing Search Log to your landlord or landlord's lawyer?": delivered_mailed_date
     datatype: date
+---
+id: Next Steps 
+continue button field: next_steps
+question: |
+  How should you file and deliver the Motion to Stay Execution?
+subquestion: |
+  Make **two copies** of the completed Motion to Stay Execution and Housing Hearch Log. 
+  
+  **File the Stay of Execution as soon as possible.**
+  
+  Below are the ways in which you can file your motion: 
+  
+  * Use the court's online filing system 
+  * Call the clerk's office and ask if the form can be emailed. 
+  * Physically take the form to the clerk's office. (The court will physically stamp the date on your copy of the Motion and this will be proof you filed the form timely) 
+  * Mail the form to the court clerk 
+    (*Note: You risk being evicted if the court does not receieve the form on time.*)  
 ---
 id: preview motion_to_stay_execution
 question: |
@@ -293,7 +459,7 @@ review:
       ${ move_notice_date }
   - Edit: move_time
     button: |
-      **What is the time on the sheriff's eviction notice? (i.e. 2:00PM or 9:00AM)**:
+      **What is the time on the sheriff's eviction notice?**:
       ${ move_time }
   - Edit: factor_court_consider
     button: |
@@ -448,37 +614,26 @@ attachments:
       - "tenant_unable_find_place_live": ${  tenant_unable_find_place_live }
       - "sixty_older": ${ sixty_older }
       - "physical_mental_impairment": ${ physical_mental_impairment }
-      - "special_hardship_tenant_move": ${ attachment_name.safe_value("special_hardship_tenant_move") }
+      - "special_hardship_tenant_move": ${ special_hardship_tenant_move }
       - "received_notice_sheriff_move": ${ received_notice_sheriff_move }
       - "move_notice_date": ${ move_notice_date.format() }
       - "move_time": ${ move_time }
-      - "factor_court_consider": ${ attachment_name.safe_value("factor_court_consider") }
+      - "factor_court_consider": ${ factor_court_consider }
       - "hearing_time": ${ hearing_time }
       - "motion_hearing_date": ${ motion_hearing_date.format() }
       - "mailed_landlord_lawyer": ${ mailed_landlord_lawyer }
       - "delivered_landlord_lawyer": ${ delivered_landlord_lawyer }
       - "delivered_mailed_date": ${ delivered_mailed_date.format() }
-      - "users_signature": ${ users[0].signature_if_final(i) }
+      - "users_signature": ${ users[1].signature_if_final(i) }
       - "users1_signature": ${ users[0].signature_if_final(i) }
-      - "users_name_full__2": ${ users[0] }
+      - "users_name_full__2": ${ users[1] }
       - "users_name_full__1": ${ users[0] }
-      - "users_address_line_one": ${ users[0].address.line_one() }
+      - "users_address_line_one": ${ users[1].address.line_one() }
       - "users1_address_line_one": ${ users[0].address.line_one() }
-      - "users_address_line_two": ${ users[0].address.line_two() }
+      - "users_address_line_two": ${ users[1].address.line_two() }
       - "users1_address_line_two": ${ users[0].address.line_two() }
-      - "users_phone_number": ${ users[0].phone_number }
+      - "users_phone_number": ${ users[1].phone_number }
       - "users1_phone_number": ${ users[0].phone_number }
-      - "users_email": ${ users[0].email }
+      - "users_email": ${ users[1].email }
       - "users1_email": ${ users[0].email }
       - "signature_date": ${ signature_date }
----
-code: |
-  motion_to_stay_execution_attachment.overflow_fields["tenant_unable_find_place_live"].overflow_trigger = 272
-  motion_to_stay_execution_attachment.overflow_fields["tenant_unable_find_place_live"].label = "What have you done to find a new place to live in?"
-  motion_to_stay_execution_attachment.overflow_fields["special_hardship_tenant_move"].overflow_trigger = 260
-  motion_to_stay_execution_attachment.overflow_fields["special_hardship_tenant_move"].label = "Why would moving now be hard for you? (i.e. you rented an apartment, but it will not be available for a month, your children need to finish school, you are handicapped or elderly and cannot find a suitable place to live or you are on a waiting list for housing or you are receiving a subsidy soon or you have a child with a disability)"
-  motion_to_stay_execution_attachment.overflow_fields["factor_court_consider"].overflow_trigger = 365
-  motion_to_stay_execution_attachment.overflow_fields["factor_court_consider"].label = "Is there any other information you think may help the judge to give you more time to move? If so, please provide any other information below."
-  motion_to_stay_execution_attachment.overflow_fields.gathered = True
-
-
