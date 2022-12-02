@@ -78,6 +78,10 @@ code: |
   set_progress(14)
   users[0].phone_number
   users[0].email
+  if users.number() > 1:
+    users[1].address.address
+    users[1].phone_number
+    users[1].email
   trial_court
   set_progress(28)
   trial_court.address.address
@@ -162,6 +166,13 @@ fields:
   - code: |
       users[0].name_fields()  
 ---
+id: any other users
+question: |
+  Is anyone else adding their name to this form with you?
+fields:
+  - no label: users.there_is_another
+    datatype: yesnoradio
+---
 id: is the user the plaintiff or defendant?
 comment: |
   This question is asked if the interview can be used by both
@@ -213,6 +224,36 @@ subquestion: |
 fields:
   - code: |
       other_parties[i].name_fields(person_or_business='unsure')
+---
+id: your contact information
+question: |
+  What is your contact information?
+subquestion: |
+  Include at least **one** way to reach you other than by mail.
+
+  ${ collapse_template(why_contact_info_needed_template) }
+fields:  
+  - Mobile number: users[0].mobile_number
+    required: False
+  - Other phone number: users[0].phone_number
+    required: False
+  - Email address: users[0].email    
+    datatype: email
+    required: False
+  - Other ways to reach you: users[0].other_contact_method
+    input type: area
+    required: False
+    help: |
+      If you do not have a phone number or email, provide
+      specific contact instructions. For example, use a friend's phone number.
+      But the friend must be someone you can rely on to give you a
+      message.
+validation code: |
+  if (not showifdef('users[0].phone_number') and \
+      (not showifdef('users[0].mobile_number')) and \
+      (not showifdef('users[0].email')) and \
+      (not showifdef('users[0].other_contact_method'))):
+    validation_error(word("You need to provide at least one contact method."), field="users[0].other_contact_method")
 ---
 id: any other opposing parties
 question: |
@@ -392,7 +433,12 @@ subquestion: |
 continue button field: motion_to_stay_execution_preview_question    
 ---
 code: |
-  signature_fields = ['users[0].signature']
+  #temporary_signature_fields = ['users[0].signature']
+  #if users.number() > 1: 
+  #  temporary_signature_fields.append('users[1].signature')
+  #log(temporary_signature_fields, "console")
+  #signature_fields = temporary_signature_fields 
+  signature_fields = ['users[0].signature'] 
 ---
 code: |
   # This is a placeholder for the addresses that will be searched
