@@ -57,8 +57,8 @@ code: |
   al_form_type = "existing_case" 
 ---
 objects:
-  - other_parties: ALPeopleList.using(there_are_any=True)
   - users: ALPeopleList.using(there_are_any=True)
+  - other_parties: ALPeopleList.using(ask_number=True, target_number=1)
 ---
 sections:
   - review_motion_to_stay_execution: Review your answers
@@ -205,55 +205,59 @@ fields:
     show if:
       variable: user_ask_role
       is: "defendant"
+      
 ---
+id: your address
 sets:
-  - other_parties[i].name.first
-  - other_parties[i].name.last
-  - other_parties[i].name.middle
-  - other_parties[i].name.suffix
-id: names of opposing parties
+  - users[0].address.address
+  - users[0].address.city
+  - users[0].address.zip
+  - users[0].address.unit
+  - users[0].address.state
+  - users[0].address.country
 question: |
-  % if user_started_case:
-  Name of ${ ordinal(i) } **defendant** or respondent in this
-  matter
-  % else:
-  Name of ${ ordinal(i) } **plaintiff** or petitioner in this matter
-  % endif
+  ${ users[0] }, what is your address?
 subquestion: |
-  **The plaintiff in your case is your landlord(s).**
+  Use an address where you can be contacted.
 fields:
   - code: |
-      other_parties[i].name_fields(person_or_business='unsure')
+      users[0].address_fields(country_code=AL_DEFAULT_COUNTRY, default_state=AL_DEFAULT_STATE)
 ---
 id: your contact information
 question: |
-  What is your contact information?
+  ${ users[0] }, what is your contact information?
 subquestion: |
   Include at least **one** way to reach you other than by mail.
-
-  ${ collapse_template(why_contact_info_needed_template) }
 fields:  
-  - Mobile number: users[0].mobile_number
-    required: False
-  - Other phone number: users[0].phone_number
+  - Phone number: users[0].phone_number
     required: False
   - Email address: users[0].email    
     datatype: email
     required: False
-  - Other ways to reach you: users[0].other_contact_method
-    input type: area
-    required: False
-    help: |
-      If you do not have a phone number or email, provide
-      specific contact instructions. For example, use a friend's phone number.
-      But the friend must be someone you can rely on to give you a
-      message.
 validation code: |
   if (not showifdef('users[0].phone_number') and \
       (not showifdef('users[0].mobile_number')) and \
       (not showifdef('users[0].email')) and \
       (not showifdef('users[0].other_contact_method'))):
     validation_error(word("You need to provide at least one contact method."), field="users[0].other_contact_method")
+---
+id: your contact information 2
+question: |
+  What is ${ users[1] }'s contact information?
+subquestion: |
+  Include at least **one** way to reach ${ users[1] } other than by mail.
+fields:  
+  - Phone number: users[1].phone_number
+    required: False
+  - Email address: users[1].email    
+    datatype: email
+    required: False
+validation code: |
+  if (not showifdef('users[1].phone_number') and \
+      (not showifdef('users[1].mobile_number')) and \
+      (not showifdef('users[1].email')) and \
+      (not showifdef('users[1].other_contact_method'))):
+    validation_error(word("You need to provide at least one contact method."), field="users[1].other_contact_method")
 ---
 id: any other opposing parties
 question: |
@@ -390,14 +394,17 @@ question: |
 subquestion: |
   *You can determine if the landlord has a lawyer if there is number on the BBO# line on the Summons and Complaint.* 
   
-  **Check only one.**
+  You must **select only one option** below.
 fields:
   - Mailing: mailed_landlord_lawyer
-    datatype: yesno
-  - Delivery: delivered_landlord_lawyer
-    datatype: yesno
+    datatype: yesnowide
+  - In-Person Delivery: delivered_landlord_lawyer
+    datatype: yesnowide
   - "What date do you plan to deliver or mail your motion and Housing Search Log to your landlord or landlord's lawyer?": delivered_mailed_date
     datatype: date
+validation code: |
+  if mailed_landlord_lawyer and delivered_landlord_lawyer :
+    validation_error('You must select ONLY ONE delivery method.')
 ---
 id: Next Steps 
 continue button field: next_steps
@@ -542,6 +549,8 @@ review:
     button: |
       **Date of signature**:
       ${ signature_date }
+
+
 ---
 continue button field: plaintiffs.revisit
 question: |
@@ -607,7 +616,6 @@ edit:
   - phone_number
   - email
 confirm: True
-
 ---
 id: download motion_to_stay_execution
 event: motion_to_stay_execution_download
