@@ -69,6 +69,7 @@ comment: |
 id: interview_order_motion_to_stay_execution
 code: |
   # Set the allowed courts for this interview
+  inelligibility_disclaimer
   allowed_courts = interview_metadata["motion_to_stay_execution"]["allowed courts"]
   nav.set_section("review_motion_to_stay_execution")
   user_ask_role = "defendant"
@@ -133,8 +134,6 @@ question: |
 subquestion: |
   If you were unsuccessful with your eviction hearing or you agreed in a court judgement to move out, you can ask the court to delay your move-out from the property if you meet certain criteria within ten days of your hearing. A request for a Stay of Execution can be made only if it is a {no-fault eviction} if you are forced to leave without cause, and you cannot in good faith find a place to live. The amount of time you can ask for depends on the reason for the eviction.
   
-  If your landlord brought an eviction against you for a reason that is your fault (i.e non-payment of rent or you did not follow the terms of your lease), the court may not give you more time to move or little extra time to move (i.e a few days or a few weeks). Also, the court may ask you to pay rent or a fair value of your apartment while you stay. 
-  
   To use this form, you will need relevant Housing court documents including:
   
   *  The Summons and Complaint
@@ -153,6 +152,34 @@ terms:
  
   48-hour notice:  |
      If your landlord/owner won the eviction case, they will get an execution 10 days after the court enters the judgement. The landlord can use the execution to have a sheriff or constable physically remove you and your things from your home. The constable or sheriff must you give you **48 hours notice** before they can move you out. 
+---
+id: Inelligibility Disclaimer
+continue button field: inelligibility_disclaimer
+question: |
+  Were you evicted for a reason that was your fault? 
+subquestion: |
+  Examples: 
+  
+  * Non-payment of rent 
+  
+  * You did not follow the terms of your lease 
+  
+  * Other Reason
+  
+ 
+fields:   
+  - no label: eviction_is_fault
+    datatype: yesnoradio
+  - note: | 
+      The court *may not give you more time to move or little extra time to move* (i.e a few days or a few weeks). Also, the court may ask you to pay rent or a fair value of your apartment while you stay. **Requesting more time to move is diffcult to obtain and is left to the discretion of the judge, but you may still use this form to request an extension.** 
+    show if: 
+      variable: eviction_is_fault
+      is: true
+  - note: | 
+     The court may grant you more time to move. **You may use this form to tell the court what you have done to find a new place to live in.**
+    show if: 
+      variable: eviction_is_fault
+      is: false
 ---
 id: your name
 sets:
