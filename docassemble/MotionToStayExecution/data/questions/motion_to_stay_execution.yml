@@ -79,7 +79,7 @@ code: |
   set_progress(14)
   users[0].phone_number
   users[0].email
-  if users.number() > 1:
+  if users.number()  > 1:
     users[1].address.address
     users[1].phone_number
     users[1].email
@@ -299,6 +299,25 @@ subquestion: |
 fields:
   - no label: other_parties.there_is_another
     datatype: yesnoradio
+---
+sets:
+  - other_parties[i].name.first
+  - other_parties[i].name.last
+  - other_parties[i].name.middle
+  - other_parties[i].name.suffix
+id: names of opposing parties
+question: |
+  What is your landlord's name? 
+subquestion:  |
+  **Your landlord is the plaintiff in the case.** 
+fields:
+  - code: |
+      other_parties[i].name_fields(person_or_business='unsure')
+---
+generic object: ALIndividual
+template: x.person_type_label
+content: |
+  Is your landlord a person, or a business?
 ---
 id: Did you get a 48-hour notice of eviction from a sheriff or constable? 
 question: |
