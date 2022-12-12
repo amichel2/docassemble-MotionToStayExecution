@@ -60,6 +60,10 @@ objects:
   - users: ALPeopleList.using(there_are_any=True)
   - other_parties: ALPeopleList.using(ask_number=True, target_number=1)
 ---
+code: |
+  if users.number() >= 2:
+    users.there_is_another = Fals
+---
 sections:
   - review_motion_to_stay_execution: Review your answers
 ---
@@ -79,7 +83,7 @@ code: |
   set_progress(14)
   users[0].phone_number
   users[0].email
-  if users.number()  > 1:
+  if users.number()>= 2:
     users[1].address.address
     users[1].phone_number
     users[1].email
@@ -166,7 +170,6 @@ subquestion: |
   
   * Other Reason
   
- 
 fields:   
   - no label: eviction_is_fault
     datatype: yesnoradio
@@ -196,9 +199,14 @@ fields:
 id: any other users
 question: |
   Is anyone else adding their name to this form with you?
+  
 fields:
   - no label: users.there_is_another
-    datatype: yesnoradio
+    datatype: yesnoradio   
+---
+code: |
+  if users.number() >= 2:
+    users.there_is_another = False
 ---
 id: is the user the plaintiff or defendant?
 comment: |
