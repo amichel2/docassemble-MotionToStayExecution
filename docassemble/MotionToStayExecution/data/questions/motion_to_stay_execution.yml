@@ -134,15 +134,24 @@ comment: |
 id: Motion_to_Stay_Execution
 continue button field: motion_to_stay_execution_intro
 question: |
-  Motion to Stay Execution
+ Were you unsuccessful with your eviction hearing or did you agree in a court judgment to move out? 
 subquestion: |
-  If you were unsuccessful with your eviction hearing or you agreed in a court judgement to move out, you can ask the court to delay your move-out from the property if you meet certain criteria within ten days of your hearing. A request for a Stay of Execution can be made only if it is a {no-fault eviction} if you are forced to leave without cause, and you cannot in good faith find a place to live. The amount of time you can ask for depends on the reason for the eviction.
+  If eligible, you can ask the court to delay your move-out from the property within **ten days** of your hearing. 
   
-  To use this form, you will need relevant Housing court documents including:
+  *The amount of time you can ask for depends on the reason for the eviction.* 
   
-  *  The Summons and Complaint
-  *  Your Housing Search Information (You will need this information for the {Housing Search Log}) 
-  *  {48-Hour Notice} (if applicable)
+  **You can request a Stay of Execution only if:**
+  
+  * the eviction was not your fault {no-fault eviction};
+  * the landlord is forcing you to leave without cause; and 
+  * you cannot in good faith find a place to live. 
+
+  **To use this form, you will need relevant Housing court documents including:**
+  
+  * The Summons and Complaint
+  * Your Housing Search Information ( You need this information for the {Housing Search Log}*)
+  * {48-Hour Notice} (if applicable)
+
   
 terms:
   no-fault eviction: |
@@ -152,10 +161,19 @@ terms:
     *   The landlord wants to sell the building    
 
   housing search log: |
-    You will need to submit the Housing Search Log Form with you request for a Stay of Execution showing your search for apartments you tried to rent and things you have done to look for a new apartment.
+    You must submit the Housing Search log with your request for more time to move out. 
+    
+    It must include: 
+    
+    *   Your search for apartments you tried to rent 
+    *   Things you have done to look for a new apartment
  
   48-hour notice:  |
-     If your landlord/owner won the eviction case, they will get an execution 10 days after the court enters the judgement. The landlord can use the execution to have a sheriff or constable physically remove you and your things from your home. The constable or sheriff must you give you **48 hours notice** before they can move you out. 
+     * The court will give your landlord an execution 10 days after your hearing to move you out. 
+     
+     * Your landlord can then have a sheriff or constable remove you and your things from your home. 
+     
+     * The constable or sheriff must you give you **48 hours' notice** before they can move you out. 
 ---
 id: Inelligibility Disclaimer
 continue button field: inelligibility_disclaimer
@@ -165,21 +183,23 @@ subquestion: |
   Examples: 
   
   * Non-payment of rent 
-  
   * You did not follow the terms of your lease 
-  
   * Other Reason
   
 fields:   
   - no label: eviction_is_fault
     datatype: yesnoradio
   - note: | 
-      The court *may not give you more time to move or little extra time to move* (i.e a few days or a few weeks). Also, the court may ask you to pay rent or a fair value of your apartment while you stay. **Requesting more time to move is diffcult to obtain and is left to the discretion of the judge, but you may still use this form to request an extension.** 
+      The court *may not give you more time to move or little extra time to move* (i.e a few days or a few weeks). Also, the court may ask you to pay rent or a fair value of your apartment while you stay.
+      
+      **Requesting more time to move is diffcult to get and is at the judge's discretion. You may still use this form to request more time to move out.** 
     show if: 
       variable: eviction_is_fault
       is: true
   - note: | 
-     The court may grant you more time to move. **You may use this form to tell the court what you have done to find a new place to live in.**
+     The court may grant you more time to move. 
+     
+     **You may use this form to tell the court what you have done to find a new place to live in.**
     show if: 
       variable: eviction_is_fault
       is: false
@@ -294,6 +314,22 @@ validation code: |
       (not showifdef('users[1].other_contact_method'))):
     validation_error(word("You need to provide at least one contact method."), field="users[1].other_contact_method")
 ---
+sets:
+  - users[i].name.first
+  - users[i].name.last
+  - users[i].name.middle
+  - users[i].name.suffix    
+id: other users names
+question: |
+  % if al_form_type in ['starts_case','existing_case','appeal']:
+  What is the name of the person adding their name to the form with you? 
+  % else:
+  What is the name of the person adding their name to the form with you? 
+  % endif
+fields:
+  - code: |
+      users[i].name_fields()
+---
 id: any other opposing parties
 question: |
   % if user_started_case:
@@ -353,7 +389,9 @@ fields:
       variable: sixty_older
       is: true
   - note: | 
-     The court may delay your move-out for up to **six months** if the eviction was not your fault. *If the court grants you a shorter time, another motion can be filed if you need more time.* 
+     The court may delay your move-out for up to **six months** if the eviction was not your fault. 
+     
+     *If the court grants you a shorter time, you can file another motion if you need more time.* 
     show if: 
       variable: sixty_older
       is: false
@@ -366,14 +404,16 @@ fields:
       variable: physical_mental_impairment
       is: true
   - note: | 
-     The court may delay your move-out for up to **six months** if the eviction was not your fault. *If the court grants you a shorter time, another motion can be filed if you need more time.* 
+     The court may delay your move-out for up to **six months** if the eviction was not your fault. 
+     
+     *If the court grants you a shorter time, you can file another motion if you need more time.* 
     show if: 
       variable: physical_mental_impairment
       is: false
   
 terms:
   disability: |
-    Your disability can be a physical or mental impairment that significantly limts: 
+    Your disability can be a physical or mental impairment that limits: 
     
     *  The kind of housing you can live in.;
     *  Your ability to look for new housing.; OR 
@@ -387,7 +427,7 @@ question: |
 subquestion: |
   **Describe what you have done to find a new place to live.**
   
-  The Housing Search Log Form should be used to help you keep track of the things you did to find a new apartment. You will need to attach a copy of the Housing Search Log Form to your Motion. 
+  The Housing Search Log is to help you keep track of the things you did to find a new apartment. You will need to attach a copy of the Housing Search Log Form to your Motion. 
 fields:
   - no label: tenant_unable_find_place_live
     input type: area
@@ -396,7 +436,7 @@ id: Unable to Find a Place to Live 2
 question: |
   Why would moving now be hard for you?
 subquestion: |
-  For example you can type things like: 
+  For example, you can type things like: 
   
   * I have rented a new apartment, but it will not be available for a month. 
   * I cannot move until my children finish school. 
@@ -423,7 +463,7 @@ id: Request for Motion
 question: |
   Do you know your hearing date and time?
 subquestion: |
-  **Call the clerk's office** and tell the clerk you need to have a hearing right away before the sheriff move you out. 
+  **Call the clerk's office** and tell the clerk you need to have a hearing right away before the sheriff moves you out. 
   
   Ask the court clerk: 
   
@@ -444,38 +484,42 @@ fields:
 ---
 id: Notice of Stay Execution to Plaintiff
 question: |
-  How will you be delivering the motion and Housing Search Log to your landlord or landlord's lawyer? 
+  How will you deliver your request for more time to move out? 
 subquestion: |
-  *You can determine if the landlord has a lawyer if there is number on the BBO# line on the Summons and Complaint.* 
+  Your request must be delivered to your landlord or landlord's lawyer. 
+   
+   (You can determine if the landlord has a lawyer if there is number on the BBO# line on the         Summons and Complaint.)
   
-  You must **select only one option** below.
+    You must **select only one option** below. 
+  
 fields:
   - Mailing: mailed_landlord_lawyer
     datatype: yesnowide
   - In-Person Delivery: delivered_landlord_lawyer
     datatype: yesnowide
-  - "What date do you plan to deliver or mail your motion and Housing Search Log to your landlord or landlord's lawyer?": delivered_mailed_date
+  - "What date do you plan to deliver or mail your request?": delivered_mailed_date
     datatype: date
 validation code: |
   if mailed_landlord_lawyer and delivered_landlord_lawyer :
     validation_error('You must select ONLY ONE delivery method.')
+   
 ---
 id: Next Steps 
 continue button field: next_steps
 question: |
   How should you file and deliver the Motion to Stay Execution?
 subquestion: |
-  Make **two copies** of the completed Motion to Stay Execution and Housing Hearch Log. 
+  Make **two copies** of the completed Motion to Stay Execution and Housing Search Log. 
   
   **File the Stay of Execution as soon as possible.**
   
   Below are the ways in which you can file your motion: 
   
   * Use the court's online filing system 
-  * Call the clerk's office and ask if the form can be emailed. 
-  * Physically take the form to the clerk's office. (The court will physically stamp the date on your copy of the Motion and this will be proof you filed the form timely) 
+  * Call the clerk's office and ask if you can email the form. 
+  * Take the form to the clerk's office. (The court will stamp the date on your copy of the Motion and this will be proof you filed the form timely) 
   * Mail the form to the court clerk 
-    (*Note: You risk being evicted if the court does not receieve the form on time.*)  
+    (*Note: You risk eviction if the court does not receive the form on time.*)  
 ---
 id: preview motion_to_stay_execution
 question: |
